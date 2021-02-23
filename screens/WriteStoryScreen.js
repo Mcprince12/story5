@@ -8,64 +8,63 @@ export default class WriteStoryScreen extends React.Component{
     constructor(){
         super();
         this.state={
-            text:'',
-            text1:'',
-            text2:''
+            author:'',
+            title:'',
+            story:''
         }
     }
-    submitAuthor = ()=>{
-       db.collection("Story").doc("Author").update({
-           'AuthorName':this.state.text
-       })
+    submitStory = (author, title, story)=>{
+       db.collection("Story").add({
+           'Author': author,
+           'Title': title,
+           'Story': story,
+       } )
+        this.setState( {
+            author: '',
+            title: '',
+            story: '',
+        } )
+        alert( "Your story has been successfully submitted" );
     }
-   submitTitle =  ()=>{
-        db.collection("Story").doc("Title").update({
-            'Title':this.state.text1
-        })
-    }
-    submitStory = ()=>{
-        db.collection("Story").doc("Story").update({
-            'Story':this.state.text2
-        })
-        
-    }
+
     render(){
-        return(
+        return (
+            <View>
             <KeyboardAvoidingView>
                 <AppHeader/>
                 
                 <TextInput style = {styles.inputBox}
                 placeholder={"Story Title"}
                 onChangeText={(text1) => {
-                    this.setState({ text1: text1 });
+                    this.setState({ title: text1 });
                     
                   }}
-                  value = {this.state.text1}/>
+                  value = {this.state.title}/>
                 <TextInput style = {styles.inputBox}
                 placeholder={"Author"}
                 onChangeText={(text) => {
-                    this.setState({ text: text });
+                    this.setState({ author: text });
                   }}
-                  value = {this.state.text}/>
+                  value = {this.state.author}/>
                 <TextInput style = {[styles.inputBox, {height: 400}]} multiline={true}
                 placeholder={"Write Story Here"}
                 onChangeText={(text2) => {
-                    this.setState({ text2: text2 });
+                    this.setState({ story: text2 });
                   }}
-                  value = {this.state.text2}/>
+                  value = {this.state.story}/>
 
                 <TouchableOpacity style={styles.button}
-                onPress={()=>{
-                this.submitAuthor();
-                this.submitTitle();
-                 this.submitStory();
-                 alert("Your Story has been Submitted");
+                    onPress={() =>
+                    {
+                        this.submitStory(this.state.author, this.state.title, this.state.story);
+                
                 }}>
                     <Text style={styles.buttonText}>
                         Submit
                     </Text>
                 </TouchableOpacity>
-            </KeyboardAvoidingView>
+                </KeyboardAvoidingView>
+                </View>
         )
     }
 }

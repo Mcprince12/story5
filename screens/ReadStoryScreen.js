@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View, FlatList } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
+import { ListItem } from 'react-native-elements';
 import {SearchBar} from 'react-native-elements';
 import {ScrollView} from 'react-native-gesture-handler'
 import db from '../config'
@@ -9,81 +10,66 @@ export default class ReadStoryScreen extends React.Component{
        super();
        this.state={
            search:'',
-           allInputs:[],
-           lastVisibleSubmission:null,
+           requestedBooksList: [],
        };
+       this.requestRef = null;
    }
 
-   updateSearch=(search)=>{
-       this.setState({search});
-   }
-
-   retrieveStory = async() =>{
-        var text = this.state.search;
-        var enteredText = text.split("");
-        if(enteredText[0].toUpperCase()===""){
-            const query = await db.collection("Story").where('Story', '==', text)
-            .startAfter(this.state.lastVisibleSubmission).limit(10).get();
-            query.docs.map((doc)=>{
-                this.setState({
-                    allInputs:[...this.state.allInputs, doc.data()],
-                    lastVisibleSubmission:doc,
-                })
-            })
-        } else if(enteredText[0].toUpperCase()===""){
-            const query = await db.collection("Author").where('AuthorName', '==', text)
-            .startAfter(this.state.lastVisibleSubmission).limit(10).get();
-            query.docs.map((doc)=>{
-                this.setState({
-                    allInputs:[...this.state.allInputs, doc.data()],
-                    lastVisibleSubmission:doc,
-                })
-            })      
-         }
-   }
-
+    updateSearch = ( search ) =>
+    {
+        this.setState( { search: search } );
+    }
    
-
+    retrieveStory = () =>
+    {
+        this.requestRef = db.collection( "Story" )
+            .onSnapshot( ( snapshot ) =>
+            {
+                var requestedBooksList = snapshot.docs.map( document => document.data() )
+                this.setState( {
+                    requestedBooksList: requestedBooksList,
+                } )
+            } )
+    }
+    keyExtractor = ( item, index ) => index.toString();
+    renderItem = ( { item, i } ) =>
+    {
+        return (
+           <ListItem
+                key={i}
+                title={item.title}
+                subtitle={item.author}
+                titleStyle={{ color: 'black' }}
+                bottomDivider
+            /> 
+        )
+    }
     render(){
         return(
-            <View style = {styles.container}>
+            <View style={styles.container}>
+                <View>
                 <SearchBar
                     placeholder="Type Here..."
                     onChangeText={this.updateSearch}
                     value={this.state.search}
                     style = {styles.searchBar}
+                    />
+                </View>
+                <FlatList
+                    keyExtractor={
+                        this.keyExtractor
+                    }
+                    data={
+                        this.state.requestedBooksList
+                    }
+                    renderItem={
+                        this.renderItem
+                    }
                 />
-                <FlatList style = {styles.bar}
-                        data = {this.state.allInputs}
-                    renderItem={( { item } ) => (
-                        <View style={{ borderBottomWidth: 2 }}>
-                            <Text>
-                                {db.collection( "Story" ).doc( "Author" ).get() + this.state.lastVisibleSubmission}
-                            </Text>
-                            <Text>
-                                {db.collection( "Story" ).doc( "Title" ).get() + this.state.lastVisibleSubmission}
-                            </Text>
-                            <Text>
-                                {db.collection( "Story" ).doc( "Story" ).get() + this.state.lastVisibleSubmission}
-                            </Text>
-
-                        </View>
-                    )}
-                   
-                    keyExtractor={( item, index ) =>
-                    {
-                      index.toString()  
-                    }}
-                   
-                    onEndReached={this.retrieveStory}
-                    onEndReachedThreshold={0.7}
-               
-               />
-            </View>
-        )
-    }
-}
-
+                </View>
+                     )
+            }
+            }
 const styles = StyleSheet.create({    
     container: {      flex: 1,     
          marginTop: 20    }, 
