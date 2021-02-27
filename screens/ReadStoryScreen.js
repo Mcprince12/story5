@@ -32,11 +32,11 @@ export default class ReadStoryScreen extends React.Component{
             } )
     }
     keyExtractor = ( item, index ) => index.toString();
-    renderItem = ( { item, i } ) =>
+    renderItem = ( { item, index } ) =>
     {
         return (
            <ListItem
-                key={i}
+                key={index}
                 title={item.title}
                 subtitle={item.author}
                 titleStyle={{ color: 'black' }}
